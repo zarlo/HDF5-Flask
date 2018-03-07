@@ -1,0 +1,44 @@
+<html>
+
+<head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+
+<h1>List:</h1>
+
+
+    {% for item in list %}
+
+
+
+            {% if show %}
+
+    <div class="panel panel-default" style="width: 30vh; float:left;" >
+          <div class="panel-heading"><a href="{{ url }}{{ item }}">
+        {{ item }}</a></div>
+            <div class="panel-body">
+
+                {% if '.' in item %}
+                    <img src='{{ url }}/{{item}}' style="width: 25vh;">
+                {% else %}
+                    <img src="http://via.placeholder.com/75x75">
+                {% endif %}
+
+
+            </div>
+        </div>
+    {% else %}
+
+                <a href="{{ url }}{{ item }}">
+        {{ item }}</a><br>
+
+
+{% endif %}
+{% endfor %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</body>
+
+</html>
