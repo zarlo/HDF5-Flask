@@ -9,7 +9,7 @@ __pycache__/
 data/
 *.jpg
 *.h5
-
+!im*.jpg
 
 
 # Distribution / packaging
