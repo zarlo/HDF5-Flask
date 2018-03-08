@@ -5,13 +5,13 @@
 </head>
 
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <h1>List:</h1>
 
-
+<div id="photos" >
     {% for item in list %}
-
-
 
             {% if show %}
 
@@ -21,7 +21,7 @@
             <div class="panel-body">
 
                 {% if '.' in item %}
-                    <img src='{{ url }}/{{item}}' style="width: 25vh;">
+                    <img src='{{ url }}/{{item}}?thumb' style="width: 25vh;">
                 {% else %}
                     <img src="http://via.placeholder.com/75x75">
                 {% endif %}
@@ -34,11 +34,11 @@
                 <a href="{{ url }}{{ item }}">
         {{ item }}</a><br>
 
-
 {% endif %}
 {% endfor %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</div>
+
 </body>
 
 </html>

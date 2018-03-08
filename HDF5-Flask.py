@@ -1,22 +1,22 @@
 from flask import *
-from hdf5helper import *
+import numpy as np
 import h5py
+from PIL import Image
+from io import BytesIO
+import datetime
+
 
 app = Flask(__name__)
 
-f = FileHelper('test.h5')
 
-f.store_from_folder('data/', '/a_place/')
-f.store_file('im1.jpg', '/cats/im1.jpg')
-f.store_file('im2.jpg', '/cats/im2.jpg')
-f.store_file('im3.jpg', '/cats/im3.jpg')
+thumbnail_db = h5py.File('thumbnail.h5', 'a')
 
-icon_db = FileHelper('icons.h5')
 
 @app.route('/<string:db>')
 @app.route('/<string:db>/')
 def root_index(db):
-    return index(db, "/")
+    if db is not 'favicon.ico':
+        return index(db, "/")
 
 
 @app.route('/<string:db>/<path:path>')
@@ -25,28 +25,37 @@ def index(db, path):
     file = h5py.File(db + ".h5")[path]
 
     is_dataset = isinstance(file, h5py.Dataset)
-    do_show_img = request.args.get('i')
-    do_resize = request.args.get('r')
 
     if is_dataset:
 
-        if do_resize:
-            icon_Path = db + '/' + path
+        do_resize = request.args.get('thumb')
 
-            need_make = icon_Path in icon_db.get()
-            if need_make is False:
-                pass
+        if do_resize is None:
 
-            response = make_response(icon_db.get(icon_Path)[0].tobytes())
-            response.headers.set('Content-Type', 'image/jpeg')
-            return response
-
-        else:
             response = make_response(file[0].tobytes())
             response.headers.set('Content-Type', 'image/jpeg')
             return response
 
+        else:
+
+            print('do resize')
+            thumbnail_path = db + '/' + path
+
+            try:
+                output = thumbnail_db[thumbnail_path][0].tobytes()
+            except:
+                print('Making thumb nail')
+                make_thumbnail(thumbnail_path, file[0].tobytes())
+                output = thumbnail_db[thumbnail_path][0].tobytes()
+
+            thumbnail_db[thumbnail_path].attrs['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            response = make_response(output)
+            response.headers.set('Content-Type', 'image/jpeg')
+            return response
+
     else:
+
+        do_show_img = request.args.get('i')
 
         if do_show_img is None:
             show_img = False
@@ -59,6 +68,24 @@ def index(db, path):
             link += "/"
 
         return render_template("list.html", url=link, list=[key for key in file.keys()], show=show_img)
+
+
+def make_thumbnail(name, buffer):
+    size = 300, 300
+    im = Image.open( BytesIO(buffer))
+    im.thumbnail(size)
+
+    imgByteArr = BytesIO()
+    im.save(imgByteArr, format='JPEG')
+    imgByteArr = imgByteArr.getvalue()
+
+    try:
+        dt = h5py.special_dtype(vlen=np.dtype('uint8'))
+        temp = thumbnail_db.create_dataset(name, (1,), dtype=dt)
+    except:
+        temp = thumbnail_db[name]
+
+    temp[0] = np.fromstring(imgByteArr, dtype='uint8')
 
 
 if __name__ == '__main__':

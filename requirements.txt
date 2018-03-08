@@ -2,3 +2,4 @@ flask
 h5py
 h5json
 pillow
+numpy
