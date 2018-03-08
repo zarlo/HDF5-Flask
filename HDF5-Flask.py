@@ -1,13 +1,11 @@
+from io import BytesIO
+from PIL import Image
 from flask import *
 import numpy as np
-import h5py
-from PIL import Image
-from io import BytesIO
 import datetime
-
+import h5py
 
 app = Flask(__name__)
-
 
 thumbnail_db = h5py.File('thumbnail.h5', 'a')
 
@@ -38,7 +36,6 @@ def index(db, path):
 
         else:
 
-            print('do resize')
             thumbnail_path = db + '/' + path
 
             try:
@@ -72,7 +69,7 @@ def index(db, path):
 
 def make_thumbnail(name, buffer):
     size = 300, 300
-    im = Image.open( BytesIO(buffer))
+    im = Image.open(BytesIO(buffer))
     im.thumbnail(size)
 
     imgByteArr = BytesIO()
