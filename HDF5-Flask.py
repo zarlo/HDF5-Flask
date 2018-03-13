@@ -79,7 +79,7 @@ def get_mime_type(buffer):
     return magic_man.from_buffer(buffer);
 
 def make_thumbnail(name, buffer):
-    size = 300, 300
+    size = 160, 160
     im = Image.open(BytesIO(buffer))
     im.thumbnail(size)
 
@@ -105,7 +105,7 @@ def get_thumnail(db_file, db, path):
 
     except Exception as e:
         #this will be a folder
-        return redirect("http://via.placeholder.com/160x160", code=302)
+        return redirect("http://via.placeholder.com/100x100", code=302)
 
 
     try:
