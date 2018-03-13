@@ -30,8 +30,11 @@ class FileHelper(object):
 
         temp[0] = np.fromstring(file.read(), dtype='uint8')
 
-    def store_from_folder(self, path, save_path=""):
-        directory = os.fsencode(path)
-        for file in os.listdir(directory):
-            filename = os.fsdecode(file)
-            self.store_file(path + filename, save_path + filename)
+    def store_from_folder(self, path, save_path="", debug=False):
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                    t_path = os.path.join(root, name)
+                    if debug:
+                        print(t_path + '|||' + os.path.join(save_path, t_path))
+
+                    self.store_file(t_path, os.path.join(save_path, t_path))

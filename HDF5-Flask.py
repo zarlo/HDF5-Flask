@@ -1,13 +1,17 @@
 from io import BytesIO
 from PIL import Image
+from pathlib import Path
 from flask import *
 import numpy as np
+import magic
 import datetime
 import h5py
 
 app = Flask(__name__)
 
 thumbnail_db = h5py.File('thumbnail.h5', 'a')
+
+magic_man = magic.Magic()
 
 
 @app.route('/<string:db>')
@@ -20,35 +24,37 @@ def root_index(db):
 @app.route('/<string:db>/<path:path>')
 def index(db, path):
 
-    file = h5py.File(db + ".h5")[path]
+
+    if db.endswith('/'):
+        db = db[:-1]
+
+    print('db path:' + db)
+    print('file Path:' + path)
+    if_db = Path(db + ".h5")
+
+    if if_db.is_file() is False:
+        return render_template('errors/404.html', msg='no DB with the name "' + db + '"')
+
+    try:
+        file = h5py.File(db + ".h5")[path]
+    except:
+        return render_template('errors/404.html', msg="there was an error i think it was just a 404 error")
 
     is_dataset = isinstance(file, h5py.Dataset)
 
-    if is_dataset:
+    do_resize = request.args.get('thumb')
 
-        do_resize = request.args.get('thumb')
+    if is_dataset or do_resize is not None:
+
 
         if do_resize is None:
 
             response = make_response(file[0].tobytes())
-            response.headers.set('Content-Type', 'image/jpeg')
+            response.headers.set('Content-Type', get_mime_type(file[0].tobytes()) )
             return response
 
         else:
-
-            thumbnail_path = db + '/' + path
-
-            try:
-                output = thumbnail_db[thumbnail_path][0].tobytes()
-            except:
-                print('Making thumb nail')
-                make_thumbnail(thumbnail_path, file[0].tobytes())
-                output = thumbnail_db[thumbnail_path][0].tobytes()
-
-            thumbnail_db[thumbnail_path].attrs['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            response = make_response(output)
-            response.headers.set('Content-Type', 'image/jpeg')
-            return response
+            return get_thumnail(file ,db, path)
 
     else:
 
@@ -61,11 +67,16 @@ def index(db, path):
 
         link = request.path
 
+        print('Link:' + request.path)
+
         if link.endswith('/') is False:
             link += "/"
 
         return render_template("list.html", url=link, list=[key for key in file.keys()], show=show_img)
 
+
+def get_mime_type(buffer):
+    return magic_man.from_buffer(buffer);
 
 def make_thumbnail(name, buffer):
     size = 300, 300
@@ -85,5 +96,31 @@ def make_thumbnail(name, buffer):
     temp[0] = np.fromstring(imgByteArr, dtype='uint8')
 
 
+def get_thumnail(db_file, db, path):
+    thumbnail_path = db + '/' + path
+
+    try:
+        if "image" not in get_mime_type(db_file[0].tobytes()):
+            return redirect("http://via.placeholder.com/160x160", code=302)
+
+    except Exception as e:
+        #this will be a folder
+        return redirect("http://via.placeholder.com/160x160", code=302)
+
+
+    try:
+        output = thumbnail_db[thumbnail_path][0].tobytes()
+    except:
+        print('Making thumb nail')
+        make_thumbnail(thumbnail_path, db_file[0].tobytes())
+        output = thumbnail_db[thumbnail_path][0].tobytes()
+
+    print(thumbnail_path)
+    thumbnail_db[thumbnail_path].attrs['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    response = make_response(output)
+    response.headers.set('Content-Type', get_mime_type(output) )
+    return response
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")

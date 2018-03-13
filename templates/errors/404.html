@@ -8,28 +8,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-<h1>List:</h1>
+<div class="text-center">
 
-<div id="photos" >
-    {% for item in list %}
 
-            {% if show %}
+  <h1>404</h1>
 
-    <div class="panel panel-default" style="width: 30vh; float:left;" >
-          <div class="panel-heading"><a href="{{ url }}{{ item }}?i">
-        {{ item }}</a></div>
-            <div class="panel-body">
-                    <img src='{{ url }}{{item}}?thumb' style="width: 25vh;">
+  <p>{{ msg }}</p>
 
-            </div>
-        </div>
-    {% else %}
-
-                <a href="{{ url }}{{ item }}">
-        {{ item }}</a><br>
-
-{% endif %}
-{% endfor %}
 
 </div>
 
