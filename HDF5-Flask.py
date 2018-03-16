@@ -11,6 +11,9 @@ app = Flask(__name__)
 
 thumbnail_db = h5py.File('thumbnail.h5', 'a')
 
+icons_db = h5py.File('icons.h5', 'a')
+
+
 magic_man = magic.Magic()
 
 
@@ -28,6 +31,9 @@ def index(db, path):
     if db.endswith('/'):
         db = db[:-1]
 
+    if db is 'thumbnail' or db is 'icons':
+        return render_template('errors/nope.html')
+
     print('db path:' + db)
     print('file Path:' + path)
     if_db = Path(db + ".h5")
@@ -44,8 +50,8 @@ def index(db, path):
 
     do_resize = request.args.get('thumb')
 
-    if is_dataset or do_resize is not None:
 
+    if is_dataset or do_resize is not None:
 
         if do_resize is None:
 
@@ -98,15 +104,20 @@ def make_thumbnail(name, buffer):
 
 def get_thumnail(db_file, db, path):
     thumbnail_path = db + '/' + path
-
     try:
         if "image" not in get_mime_type(db_file[0].tobytes()):
-            return redirect("http://via.placeholder.com/160x160", code=302)
+            try:
+                print(get_mime_type(db_file[0].tobytes()))
+                output = thumbnail_db[get_mime_type(db_file[0].tobytes())][0].tobytes()
+                response = make_response(output)
+                response.headers.set('Content-Type', get_mime_type(output))
+                return response
+            except Exception as e:
+                return redirect("http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/file-text-icon.png", code=302)
 
     except Exception as e:
         #this will be a folder
-        return redirect("http://via.placeholder.com/100x100", code=302)
-
+        return redirect("http://icons.iconarchive.com/icons/dtafalonso/yosemite-flat/512/Folder-icon.png", code=302)
 
     try:
         output = thumbnail_db[thumbnail_path][0].tobytes()
@@ -118,7 +129,7 @@ def get_thumnail(db_file, db, path):
     print(thumbnail_path)
     thumbnail_db[thumbnail_path].attrs['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     response = make_response(output)
-    response.headers.set('Content-Type', get_mime_type(output) )
+    response.headers.set('Content-Type', get_mime_type(output))
     return response
 
 
