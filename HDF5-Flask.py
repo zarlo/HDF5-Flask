@@ -1,11 +1,12 @@
 from io import BytesIO
 from PIL import Image
 from pathlib import Path
-from flask import *
+from flask import Flask, render_template, request, make_response, redirect
 import numpy as np
 import magic
 import datetime
 import h5py
+import glob
 
 app = Flask(__name__)
 
@@ -16,22 +17,31 @@ icons_db = h5py.File('icons.h5', 'a')
 
 magic_man = magic.Magic()
 
+@app.route('/')
+def list_dbs():
+    return render_template("list.html", url='/', list=[key for key in glob.glob("*.h5")], show=True)
+
+
 
 @app.route('/<string:db>')
 @app.route('/<string:db>/')
 def root_index(db):
-    if db is not 'favicon.ico':
-        return index(db, "/")
+    if db.endswith('.h5'):
+        db = db[:-3]
+    
+    return index(db, "/")
 
 
 @app.route('/<string:db>/<path:path>')
 def index(db, path):
 
-
     if db.endswith('/'):
         db = db[:-1]
 
-    if db is 'thumbnail' or db is 'icons':
+    if db.endswith('.h5'):
+        db = db[:-3]
+
+    if db in 'thumbnail' or db in 'icons':
         return render_template('errors/nope.html')
 
     print('db path:' + db)
@@ -82,7 +92,7 @@ def index(db, path):
 
 
 def get_mime_type(buffer):
-    return magic_man.from_buffer(buffer);
+    return magic_man.from_buffer(buffer)
 
 def make_thumbnail(name, buffer):
     size = 160, 160
@@ -112,10 +122,10 @@ def get_thumnail(db_file, db, path):
                 response = make_response(output)
                 response.headers.set('Content-Type', get_mime_type(output))
                 return response
-            except Exception as e:
+            except:
                 return redirect("http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/file-text-icon.png", code=302)
 
-    except Exception as e:
+    except:
         #this will be a folder
         return redirect("http://icons.iconarchive.com/icons/dtafalonso/yosemite-flat/512/Folder-icon.png", code=302)
 
