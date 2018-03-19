@@ -35,3 +35,10 @@ class FileHelper(object):
                         print(t_path + '|||' + os.path.join(save_path, t_path))
 
                     self.store_file(t_path, os.path.join(save_path, t_path))
+
+    def save_file(self, path, save_path):
+        file = open(save_path, 'w')
+        file.write(self.db[path][0])
+        file.close()
+
+    

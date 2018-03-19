@@ -28,7 +28,6 @@ def index(data_path):
     if '.h5' not in data_path:
         return render_template("list.html", url='/', list=[key for key in glob.glob("h5data/" + data_path + "*.h5")], show=True)
 
-
     temp = data_path.split('.h5')
 
     db = 'h5data/' + temp[0] + '.h5'

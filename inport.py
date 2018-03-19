@@ -11,6 +11,6 @@ print(folder_path)
 print(save_path)
 
 f = FileHelper(db_path)
-print('i might add a ETA on day')
+print('i might add a ETA one day')
 f.store_from_folder(folder_path, save_path, True)
 print('DONE')
