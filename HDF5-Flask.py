@@ -7,6 +7,7 @@ import magic
 import datetime
 import h5py
 import glob
+import os
 
 app = Flask(__name__)
 
@@ -19,40 +20,40 @@ magic_man = magic.Magic()
 
 @app.route('/')
 def list_dbs():
-    return render_template("list.html", url='/', list=[key for key in glob.glob("*.h5")], show=True)
+    return index('/')
+
+@app.route('/<path:data_path>')
+def index(data_path):
+
+    if '.h5' not in data_path:
+        return render_template("list.html", url='/', list=[key for key in glob.glob("h5data/" + data_path + "*.h5")], show=True)
 
 
+    temp = data_path.split('.h5')
 
-@app.route('/<string:db>')
-@app.route('/<string:db>/')
-def root_index(db):
-    if db.endswith('.h5'):
-        db = db[:-3]
-    
-    return index(db, "/")
+    db = 'h5data/' + temp[0] + '.h5'
+
+    if len(temp) is 2:
+        path = temp[1]
+    else: 
+        path = '/'
+
+    if path is '':
+        path = '/'
 
 
-@app.route('/<string:db>/<path:path>')
-def index(db, path):
-
-    if db.endswith('/'):
-        db = db[:-1]
-
-    if db.endswith('.h5'):
-        db = db[:-3]
-
-    if db in 'thumbnail' or db in 'icons':
+    if db.startswith('.'):
         return render_template('errors/nope.html')
 
     print('db path:' + db)
     print('file Path:' + path)
-    if_db = Path(db + ".h5")
+    if_db = Path(db)
 
     if if_db.is_file() is False:
         return render_template('errors/404.html', msg='no DB with the name "' + db + '"')
 
     try:
-        file = h5py.File(db + ".h5")[path]
+        file = h5py.File(db)[path]
     except:
         return render_template('errors/404.html', msg="there was an error i think it was just a 404 error")
 
@@ -97,7 +98,7 @@ def get_mime_type(buffer):
 def make_thumbnail(name, buffer):
     size = 160, 160
     im = Image.open(BytesIO(buffer))
-    im.thumbnail(size)
+    im.thumbnail(size, resample=Image.NEAREST)
 
     imgByteArr = BytesIO()
     im.save(imgByteArr, format='JPEG')
@@ -113,12 +114,17 @@ def make_thumbnail(name, buffer):
 
 
 def get_thumnail(db_file, db, path):
+    global thumbnail_db
+
+    if not os.path.exists("thumbnails.h5"):
+        thumbnail_db = h5py.File('thumbnail.h5', 'a')
     thumbnail_path = db + '/' + path
+
     try:
         if "image" not in get_mime_type(db_file[0].tobytes()):
             try:
                 print(get_mime_type(db_file[0].tobytes()))
-                output = thumbnail_db[get_mime_type(db_file[0].tobytes())][0].tobytes()
+                output = icons_db[get_mime_type(db_file[0].tobytes())][0].tobytes()
                 response = make_response(output)
                 response.headers.set('Content-Type', get_mime_type(output))
                 return response
@@ -135,7 +141,6 @@ def get_thumnail(db_file, db, path):
         print('Making thumb nail')
         make_thumbnail(thumbnail_path, db_file[0].tobytes())
         output = thumbnail_db[thumbnail_path][0].tobytes()
-
     print(thumbnail_path)
     thumbnail_db[thumbnail_path].attrs['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     response = make_response(output)
@@ -144,4 +149,4 @@ def get_thumnail(db_file, db, path):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", debug=False)

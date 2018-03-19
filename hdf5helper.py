@@ -11,9 +11,6 @@ class FileHelper(object):
     def get(self):
         return self.db
 
-    def get(self, path):
-        return self.db[path]
-
     def list(self, path):
         return [key for key in self.db[path].keys()]
 
