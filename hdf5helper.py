@@ -17,16 +17,19 @@ class FileHelper(object):
     def list_attr(self, path):
         return [key for key in self.db[path].attrs.keys()]
 
-    def store_file(self, path, store_path):
-        file = open(path, 'rb')
+    def store_buff(self, buff, store_path):
         try:
             dt = h5py.special_dtype(vlen=np.dtype('uint8'))
             temp = self.db.create_dataset(store_path, (1,), dtype=dt)
         except:
             temp = self.db[store_path]
 
-        temp[0] = np.fromstring(file.read(), dtype='uint8')
+        temp[0] = np.fromstring(buff, dtype='uint8')
 
+    def store_file(self, path, store_path):
+        file = open(path, 'rb')
+        self.store_buff(file.read(), store_path)
+        
     def store_from_folder(self, path, save_path="", debug=False):
         for root, dirs, files in os.walk(path):
             for name in files:

@@ -1,7 +1,7 @@
+from flask import Flask, render_template, request, make_response, redirect
 from io import BytesIO
 from PIL import Image
 from pathlib import Path
-from flask import Flask, render_template, request, make_response, redirect
 import numpy as np
 import magic
 import datetime
@@ -20,13 +20,21 @@ magic_man = magic.Magic()
 
 @app.route('/')
 def list_dbs():
-    return index('/')
+    return index('')
 
 @app.route('/<path:data_path>')
 def index(data_path):
 
+
     if '.h5' not in data_path:
-        return render_template("list.html", url='/', list=[key for key in glob.glob("h5data/" + data_path + "*.h5")], show=True)
+
+        db_list = []
+        for root, dirs, files in os.walk('h5data/' + data_path):
+            for filename in files:
+                db_list.append(root.split('h5data/', 1)[1] + '/' + filename)
+                        
+
+        return render_template("list.html", url='', list=db_list, show=True)
 
     temp = data_path.split('.h5')
 
@@ -39,7 +47,6 @@ def index(data_path):
 
     if path is '':
         path = '/'
-
 
     if db.startswith('.'):
         return render_template('errors/nope.html')
