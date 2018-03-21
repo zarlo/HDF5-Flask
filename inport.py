@@ -23,16 +23,16 @@ if '.tar' in folder_path:
     maxitems = len(tar.getmembers())
     citem = 0
     for item in tar.getmembers():
-        
+        citem = citem + 1 
+        math = (citem / maxitems) * 100
         if item.isreg():
             tar.extract(item, 'temp/')
             f.store_file('temp/' + item.name, os.path.join(save_path, item.name))
             os.remove('temp/' + item.name)
-            citem = citem + 1 
-            math = (citem / maxitems) * 100
 
-            sys.stdout.write("\r" + '%.2f' % math + '% Done')
-            sys.stdout.flush()
+
+        sys.stdout.write("\r" + '%.2f' % math + '% Done.')
+        sys.stdout.flush()
         
 
     shutil.rmtree('temp/')
