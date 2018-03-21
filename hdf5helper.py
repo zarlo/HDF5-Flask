@@ -20,6 +20,7 @@ class FileHelper(object):
     def store_buff(self, buff, store_path):
         try:
             dt = h5py.special_dtype(vlen=np.dtype('uint8'))
+            
             temp = self.db.create_dataset(store_path, (1,), dtype=dt)
         except:
             temp = self.db[store_path]
