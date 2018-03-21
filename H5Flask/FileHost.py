@@ -1,15 +1,15 @@
 from flask import Flask, render_template, request, make_response, redirect
+from pathlib import Path
 from io import BytesIO
 from PIL import Image
-from pathlib import Path
 import numpy as np
-import magic
 import datetime
+import magic
 import h5py
 import glob
 import os
 
-app = Flask(__name__)
+from __main__ import app
 
 thumbnail_db = h5py.File('thumbnail.h5', 'a')
 
@@ -21,6 +21,12 @@ magic_man = magic.Magic()
 @app.route('/')
 def list_dbs():
     return index('')
+
+
+@app.route('/api/<path:data_path>')
+def api(data_path):
+    pass
+
 
 @app.route('/<path:data_path>')
 def index(data_path):
@@ -99,8 +105,12 @@ def index(data_path):
         return render_template("list.html", url=link, list=[key for key in file.keys()], show=show_img)
 
 
-def get_mime_type(buffer):
-    return magic_man.from_buffer(buffer)
+def get_mime_type(buffer, db = None):
+
+    if db is None:
+        return magic_man.from_buffer(buffer)
+    else:
+        return db[buffer].attrs('mime')
 
 def make_thumbnail(name, buffer):
     size = 160, 160
@@ -127,7 +137,12 @@ def get_thumnail(db_file, db, path):
         thumbnail_db = h5py.File('thumbnail.h5', 'a')
     thumbnail_path = db + '/' + path
 
-    if "image" in get_mime_type(db_file[0].tobytes()):
+    try:
+        mime_type = get_mime_type(db_file[0].tobytes())
+    except:
+        mime_type = get_mime_type(db_file[0].tobytes(), db)
+
+    if "image" in mime_type :
 
         try:
             output = thumbnail_db[thumbnail_path][0].tobytes()
@@ -150,7 +165,3 @@ def get_thumnail(db_file, db, path):
         return redirect("http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/file-text-icon.png", code=302)
             
 
-
-
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)

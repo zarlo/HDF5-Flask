@@ -1,6 +1,6 @@
 #!bin/python3
 import sys
-from hdf5helper import FileHelper
+from H5Flask import FileHelper
 import tarfile
 import shutil
 import os

@@ -4,9 +4,10 @@ import os
 
 
 class FileHelper(object):
-
+  
     def __init__(self, db):
         self.db = h5py.File(db)
+        self.magic_man = magic.Magic()
 
     def get(self):
         return self.db
@@ -26,6 +27,8 @@ class FileHelper(object):
             temp = self.db[store_path]
 
         temp[0] = np.fromstring(buff, dtype='uint8')
+        
+        self.db[store_path].attrs('mime') = self.magic_man.from_buffer(buff)
 
     def store_file(self, path, store_path):
         file = open(path, 'rb')

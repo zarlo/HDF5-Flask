@@ -3,4 +3,3 @@ h5py
 pillow
 numpy
 libmagic==0.4.6
-flask-socketio
