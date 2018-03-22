@@ -14,22 +14,16 @@
 <div id="photos" >
     {% for item in list %}
 
-            {% if show %}
 
     <div class="panel panel-default" style="width: 30vh; height: 35vh; float:left;" >
           <div class="panel-heading"><a href="{{ url }}{{ item }}?i">
         {{ item }}</a></div>
             <div class="panel-body">
-                    <img src='{{ url }}{{item}}?thumb' style="width: 25vh; height: 25vh;">
+                    <img src='/thumbnail{{ url }}{{item}}' style="width: 25vh; height: 25vh;">
 
             </div>
         </div>
-    {% else %}
 
-                <a href="{{ url }}{{ item }}">
-        {{ item }}</a><br>
-
-{% endif %}
 {% endfor %}
 
 </div>

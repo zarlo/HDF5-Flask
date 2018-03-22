@@ -19,6 +19,14 @@ icons_db = h5py.File('icons.h5', 'a')
 
 magic_man = magic.Magic()
 
+@app.route('/thumbnail/<path:data_path>')
+def thumbnail_route(data_path):
+    temp = get_data_path(data_path)
+    db = temp[0]
+    path = temp[1]
+    file = h5py.File(db)[path]
+    return get_thumnail(file ,db, path)
+
 @app.route('/')
 def list_dbs():
     return index('')
@@ -36,25 +44,12 @@ def index(data_path):
                         
 
         return render_template("list.html", url='', list=db_list, show=True)
+    temp = get_data_path(data_path)
 
-    temp = data_path.split('.h5')
-
-    db = 'h5data/' + temp[0] + '.h5'
-
-    if len(temp) is 2:
-        path = temp[1]
-    else: 
-        path = '/'
-
-    if path is '':
-        path = '/'
-
-    if db.startswith('.'):
-        return render_template('errors/nope.html')
-
-    if_db = Path(db)
-
-    if if_db.is_file() is False:
+    db = temp[0]
+    path = temp[1] 
+    
+    if Path(db).is_file() is False:
         return render_template('errors/404.html', msg='no DB with the name "' + db + '"')
 
     try:
@@ -64,40 +59,33 @@ def index(data_path):
 
     is_dataset = isinstance(file, h5py.Dataset)
 
-    do_resize = request.args.get('thumb')
-
-    if is_dataset is False and do_resize is not None:
-        #this will be a folder
-        return redirect("http://icons.iconarchive.com/icons/dtafalonso/yosemite-flat/512/Folder-icon.png", code=302)
-
-
-
-    if is_dataset is True or do_resize is not None:
-
-        if do_resize is None:
+    if is_dataset is True:
 
             response = make_response(file[0].tobytes())
             response.headers.set('Content-Type', get_mime_type(file[0].tobytes()) )
             return response
 
-        else:
-            return get_thumnail(file ,db, path)
-
     else:
-
-        do_show_img = request.args.get('i')
-
-        if do_show_img is None:
-            show_img = False
-        else:
-            show_img = True
 
         link = request.path
 
         if link.endswith('/') is False:
             link += "/"
 
-        return render_template("list.html", url=link, list=[key for key in file.keys()], show=show_img)
+        return render_template("list.html", url=link, list=[key for key in file.keys()])
+
+
+def get_data_path(path):
+    temp = path.split('.h5')
+
+    temp[0] = 'h5data/' + temp[0] + '.h5'
+
+    if len(temp) is not 2: 
+        temp[1] = '/'
+
+    if temp[1] is '':
+        temp[1] = '/'
+    return temp
 
 
 def get_mime_type(buffer, db = None):
@@ -106,6 +94,7 @@ def get_mime_type(buffer, db = None):
         return magic_man.from_buffer(buffer)
     else:
         return db[buffer].attrs('mime')
+
 
 def make_thumbnail(name, buffer):
     size = 160, 160
@@ -131,6 +120,12 @@ def get_thumnail(db_file, db, path):
     if not os.path.exists("thumbnails.h5"):
         thumbnail_db = h5py.File('thumbnail.h5', 'a')
     thumbnail_path = db + '/' + path
+
+    is_dataset = isinstance(db_file, h5py.Dataset)
+
+    if is_dataset is False :
+        #this will be a folder
+        return redirect("http://icons.iconarchive.com/icons/dtafalonso/yosemite-flat/512/Folder-icon.png", code=302)
 
     try:
         mime_type = get_mime_type(db_file[0].tobytes())
@@ -159,4 +154,3 @@ def get_thumnail(db_file, db, path):
     except:
         return redirect("http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/file-text-icon.png", code=302)
             
-
