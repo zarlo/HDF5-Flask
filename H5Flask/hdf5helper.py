@@ -26,8 +26,7 @@ class FileHelper(object):
         except:
             temp = self.db[store_path]
 
-        temp[0] = np.fromstring(buff, dtype='uint8')
-        
+        temp[0] = np.fromstring(buff, dtype='uint8')   
         self.db[store_path].attrs('mime') = self.magic_man.from_buffer(buff)
 
     def store_file(self, path, store_path):

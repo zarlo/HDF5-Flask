@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, make_response, redirect
 from pathlib import Path
+from __main__ import app
 from io import BytesIO
 from PIL import Image
 import numpy as np
@@ -9,7 +10,7 @@ import h5py
 import glob
 import os
 
-from __main__ import app
+
 
 thumbnail_db = h5py.File('thumbnail.h5', 'a')
 
@@ -21,12 +22,6 @@ magic_man = magic.Magic()
 @app.route('/')
 def list_dbs():
     return index('')
-
-
-@app.route('/api/<path:data_path>')
-def api(data_path):
-    pass
-
 
 @app.route('/<path:data_path>')
 def index(data_path):

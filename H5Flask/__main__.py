@@ -4,6 +4,7 @@ from hdf5helper import FileHelper
 
 app = Flask(__name__)
 
+import api
 import FileHost
 
 
